@@ -1,0 +1,25 @@
+{
+  "name": "evolution-api-custom",
+  "version": "1.0.0",
+  "description": "API Evolution simplificada - sem pastas",
+  "main": "main.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc",
+    "start": "node main.js",
+    "dev": "tsx main.ts"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "baileys": "github:WhiskeySockets/Baileys",
+    "pino": "^8.11.0",
+    "typescript": "^5.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/express": "^4.17.18",
+    "tsx": "^4.20.3"
+  }
+}
