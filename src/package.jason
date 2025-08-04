@@ -1,0 +1,13 @@
+{
+  "name": "venombot-gemini",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "venom-bot": "^4.0.0",
+    "axios": "^1.4.0",
+    "tesseract.js": "^2.1.5"
+  }
+}
