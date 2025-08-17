@@ -1,23 +1,21 @@
 const { getSheetData, updateSheetData } = require('./sheets');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const tesseract = require('tesseract.js');
-const axios = require('axios');
 
 // Função principal para processar mensagens
 async function handleMessage(sock, message) {
   const from = message.key.remoteJid;
 
-  // Verifica tipo da mensagem
+  // Texto: envia menu inicial
   if (message.message?.conversation) {
-    // Texto: envia menu inicial
     await sendMenu(sock, from);
-  } else if (message.message?.imageMessage || message.message?.documentMessage) {
+  }
+  // Imagem ou documento: valida comprovante
+  else if (message.message?.imageMessage || message.message?.documentMessage) {
     try {
-      // Download do arquivo (imagem ou PDF)
       const buffer = await downloadMediaMessage(message, 'buffer', {});
       const text = await validateReceipt(buffer);
 
-      // Lógica simples de validação (você pode aprimorar)
       if (text.includes('PIX') || text.includes('Comprovante')) {
         await updateSheetData('Pedidos', { whatsapp: from, status: 'Pago', comprovante: text });
         await sock.sendMessage(from, { text: 'Pagamento confirmado! ✅ Seu pedido foi registrado.' });
