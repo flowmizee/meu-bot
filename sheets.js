@@ -1,23 +1,25 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
-const creds = require('./creds.json');
 
-const doc = new GoogleSpreadsheet('SEU_ID_DA_PLANILHA_AQUI');
+const creds = JSON.parse(process.env.GOOGLE_CREDS || '{}'); // Pegando credenciais da variável
 
-async function accessSheet() {
+const doc = new GoogleSpreadsheet(process.env.SPREADSHEET_ID);
+
+async function accessSpreadsheet() {
+  if (!creds.client_email || !creds.private_key) {
+    throw new Error('Credenciais do Google não configuradas corretamente.');
+  }
   await doc.useServiceAccountAuth(creds);
   await doc.loadInfo();
-  return doc;
 }
 
 async function getSheetData(sheetName) {
-  const doc = await accessSheet();
+  await accessSpreadsheet();
   const sheet = doc.sheetsByTitle[sheetName];
-  const rows = await sheet.getRows();
-  return rows.map(r => r._rawData);
+  return sheet.getRows();
 }
 
 async function updateSheetData(sheetName, data) {
-  const doc = await accessSheet();
+  await accessSpreadsheet();
   const sheet = doc.sheetsByTitle[sheetName];
   await sheet.addRow(data);
 }
