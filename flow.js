@@ -1,39 +1,52 @@
-const makeWASocket = require('@whiskeysockets/baileys').default;
-const { useSingleFileAuthState } = require('@whiskeysockets/baileys');
-const { handleMessage } = require('./flow');
-const qrcode = require('qrcode-terminal');
+const { getSheetData, updateSheetData } = require('./sheets');
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+const tesseract = require('tesseract.js');
 
-const { state, saveCreds } = useSingleFileAuthState('./auth_info.json'); // aqui é saveCreds mesmo
+// Função principal para processar mensagens
+async function handleMessage(sock, message) {
+  const from = message.key.remoteJid;
 
-async function startBot() {
-  const sock = makeWASocket({
-    auth: state,
-    printQRInTerminal: true,
-  });
+  // Checa se é texto ou mídia
+  if (message.message?.conversation || message.message?.imageMessage || message.message?.documentMessage) {
+    await sendMenu(sock, from);
 
-  sock.ev.on('messages.upsert', async m => {
-    const message = m.messages[0];
-    if (message.message && !message.key.fromMe) {
+    if (message.message?.imageMessage || message.message?.documentMessage) {
       try {
-        await handleMessage(sock, message);
+        const buffer = await downloadMediaMessage(message, 'buffer', {});
+        const text = await validateReceipt(buffer);
+
+        if (text.includes('PIX') || text.includes('Comprovante')) {
+          await updateSheetData('Pedidos', { whatsapp: from, status: 'Pago', comprovante: text });
+          await sock.sendMessage(from, { text: 'Pagamento confirmado! ✅ Seu pedido foi registrado.' });
+        } else {
+          await sock.sendMessage(from, { text: 'Não conseguimos validar seu comprovante. 😕 Por favor, envie novamente.' });
+        }
       } catch (err) {
-        console.error('Erro ao processar mensagem:', err);
+        console.error('Erro ao processar comprovante:', err);
+        await sock.sendMessage(from, { text: 'Ocorreu um erro ao validar o comprovante. Tente novamente.' });
       }
     }
-  });
-
-  sock.ev.on('connection.update', update => {
-    const { connection, lastDisconnect } = update;
-    if (connection === 'close') {
-      const reason = lastDisconnect?.error?.output?.statusCode;
-      console.log('Conexão fechada, tentando reconectar...', reason);
-      setTimeout(() => startBot(), 5000);
-    } else if (connection === 'open') {
-      console.log('Bot conectado!');
-    }
-  });
-
-  sock.ev.on('creds.update', saveCreds);
+  }
 }
 
-startBot();
+// Função para enviar menu com botões
+async function sendMenu(sock, from) {
+  await sock.sendMessage(from, {
+    text: 'Olá! Aqui está nosso menu 📝',
+    footer: 'Escolha uma opção abaixo:',
+    buttons: [
+      { buttonId: 'pedido', buttonText: { displayText: 'Fazer Pedido' }, type: 1 },
+      { buttonId: 'promocao', buttonText: { displayText: 'Ver Promoções' }, type: 1 },
+      { buttonId: 'atendimento', buttonText: { displayText: 'Falar com Atendimento' }, type: 1 }
+    ],
+    headerType: 1
+  });
+}
+
+// Função para OCR de comprovante
+async function validateReceipt(buffer) {
+  const { data: { text } } = await tesseract.recognize(buffer, 'por');
+  return text;
+}
+
+module.exports = { handleMessage, validateReceipt };
