@@ -1,34 +1,25 @@
-const { google } = require('googleapis');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
+const creds = require('./creds.json');
 
-const creds = JSON.parse(process.env.GOOGLE_CREDS);
+const doc = new GoogleSpreadsheet('SEU_ID_DA_PLANILHA_AQUI');
 
-const client = new google.auth.JWT(
-  creds.client_email,
-  null,
-  creds.private_key,
-  ['https://www.googleapis.com/auth/spreadsheets']
-);
-
-const sheets = google.sheets({ version: 'v4', auth: client });
-const SHEET_ID = process.env.SHEET_ID;
-
-// Ler dados
-async function getSheetData(range) {
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SHEET_ID,
-    range
-  });
-  return res.data.values;
+async function accessSheet() {
+  await doc.useServiceAccountAuth(creds);
+  await doc.loadInfo();
+  return doc;
 }
 
-// Atualizar dados
-async function updateSheetData(range, values) {
-  await sheets.spreadsheets.values.update({
-    spreadsheetId: SHEET_ID,
-    range,
-    valueInputOption: 'USER_ENTERED',
-    requestBody: { values }
-  });
+async function getSheetData(sheetName) {
+  const doc = await accessSheet();
+  const sheet = doc.sheetsByTitle[sheetName];
+  const rows = await sheet.getRows();
+  return rows.map(r => r._rawData);
+}
+
+async function updateSheetData(sheetName, data) {
+  const doc = await accessSheet();
+  const sheet = doc.sheetsByTitle[sheetName];
+  await sheet.addRow(data);
 }
 
 module.exports = { getSheetData, updateSheetData };
