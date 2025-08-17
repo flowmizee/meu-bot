@@ -1,14 +1,16 @@
-const { makeWASocket, useSingleFileAuthState } = require('@whiskeysockets/baileys');
+const makeWASocket = require('@whiskeysockets/baileys').default;
+const { useSingleFileAuthState } = require('@whiskeysockets/baileys/lib/Defaults'); // Ajuste aqui
 const { handleMessage } = require('./flow');
 
-const { state, saveCreds } = useSingleFileAuthState('./auth_info.json');
+const { state, saveState } = useSingleFileAuthState('./auth_info.json'); // 'saveState' é o correto
 
 async function startBot() {
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true
+    printQRInTerminal: true // só para testes locais
   });
 
+  // Captura novas mensagens
   sock.ev.on('messages.upsert', async m => {
     const message = m.messages[0];
     if (message.message && !message.key.fromMe) {
@@ -20,6 +22,7 @@ async function startBot() {
     }
   });
 
+  // Eventos de conexão
   sock.ev.on('connection.update', update => {
     const { connection } = update;
     if (connection === 'close') {
@@ -30,7 +33,9 @@ async function startBot() {
     }
   });
 
-  sock.ev.on('creds.update', saveCreds);
+  // Salva credenciais automaticamente
+  sock.ev.on('creds.update', saveState);
 }
 
+// Inicia o bot
 startBot();
