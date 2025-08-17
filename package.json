@@ -1,0 +1,15 @@
+{
+  "name": "meu-bot",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.18",
+    "qrcode-terminal": "^0.12.0",
+    "google-spreadsheet": "^3.3.0",
+    "tesseract.js": "^4.0.2",
+    "axios": "^1.6.3"
+  }
+}
