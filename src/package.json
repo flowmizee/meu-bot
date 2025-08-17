@@ -1,14 +1,21 @@
 {
   "name": "meu-bot",
   "version": "1.0.0",
+  "description": "Bot de WhatsApp integrado com Google Sheets e validação de comprovante",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^4.5.6",
+    "@whiskeysockets/baileys": "^5.0.12",
     "qrcode-terminal": "^0.12.0",
     "google-spreadsheet": "^3.3.0",
-    "tesseract.js": "^4.0.2"
-  }
+    "tesseract.js": "^4.0.2",
+    "axios": "^1.6.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Flowmize",
+  "license": "ISC"
 }
