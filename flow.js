@@ -13,7 +13,8 @@ async function handleMessage(sock, message) {
   // Imagem ou documento: valida comprovante
   else if (message.message?.imageMessage || message.message?.documentMessage) {
     try {
-      const buffer = await downloadMediaMessage(message, 'buffer', {});
+      const mediaMessage = message.message.imageMessage || message.message.documentMessage;
+      const buffer = await downloadMediaMessage(mediaMessage, 'buffer', {});
       const text = await validateReceipt(buffer);
 
       if (text.includes('PIX') || text.includes('Comprovante')) {
@@ -45,8 +46,13 @@ async function sendMenu(sock, from) {
 
 // Função para OCR de comprovante (imagem ou PDF)
 async function validateReceipt(buffer) {
-  const { data: { text } } = await tesseract.recognize(buffer, 'por');
-  return text;
+  try {
+    const { data: { text } } = await tesseract.recognize(buffer, 'por', { logger: m => console.log(m) });
+    return text;
+  } catch (err) {
+    console.error('Erro no OCR:', err);
+    return '';
+  }
 }
 
 module.exports = { handleMessage, validateReceipt };
