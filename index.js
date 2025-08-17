@@ -1,13 +1,14 @@
-const { makeWASocket, useSingleFileAuthState } = require('@whiskeysockets/baileys');
+const makeWASocket = require('@whiskeysockets/baileys').default;
+const { useSingleFileAuthState } = require('@whiskeysockets/baileys');
 const { handleMessage } = require('./flow');
 const qrcode = require('qrcode-terminal');
 
-const { state, saveCreds } = useSingleFileAuthState('./auth_info.json');
+const { state, saveState } = useSingleFileAuthState('./auth_info.json');
 
 async function startBot() {
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true, // só para testes locais
+    printQRInTerminal: true // Apenas para testes locais
   });
 
   // Captura novas mensagens
@@ -24,10 +25,9 @@ async function startBot() {
 
   // Eventos de conexão
   sock.ev.on('connection.update', update => {
-    const { connection, lastDisconnect } = update;
+    const { connection } = update;
     if (connection === 'close') {
-      const reason = lastDisconnect?.error?.output?.statusCode;
-      console.log('Conexão fechada, tentando reconectar...', reason);
+      console.log('Conexão fechada, tentando reconectar...');
       setTimeout(() => startBot(), 5000);
     } else if (connection === 'open') {
       console.log('Bot conectado!');
@@ -35,7 +35,7 @@ async function startBot() {
   });
 
   // Salva credenciais automaticamente
-  sock.ev.on('creds.update', saveCreds);
+  sock.ev.on('creds.update', saveState);
 }
 
 // Inicia o bot
