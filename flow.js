@@ -6,7 +6,7 @@ const tesseract = require('tesseract.js');
 async function handleMessage(sock, message) {
   const from = message.key.remoteJid;
 
-  // Checa se é texto ou mídia
+  // Mensagem de texto ou mídia
   if (message.message?.conversation || message.message?.imageMessage || message.message?.documentMessage) {
     await sendMenu(sock, from);
 
@@ -29,7 +29,7 @@ async function handleMessage(sock, message) {
   }
 }
 
-// Função para enviar menu com botões
+// Envia menu com botões
 async function sendMenu(sock, from) {
   await sock.sendMessage(from, {
     text: 'Olá! Aqui está nosso menu 📝',
@@ -43,7 +43,7 @@ async function sendMenu(sock, from) {
   });
 }
 
-// Função para OCR de comprovante
+// OCR de comprovantes
 async function validateReceipt(buffer) {
   const { data: { text } } = await tesseract.recognize(buffer, 'por');
   return text;
