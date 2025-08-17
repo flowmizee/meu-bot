@@ -8,7 +8,7 @@ const { state, saveState } = useSingleFileAuthState('./auth_info.json');
 async function startBot() {
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true, // apenas para testes locais
+    printQRInTerminal: true, // só para testes locais
   });
 
   // Captura novas mensagens
@@ -27,7 +27,8 @@ async function startBot() {
   sock.ev.on('connection.update', update => {
     const { connection, lastDisconnect } = update;
     if (connection === 'close') {
-      console.log('Conexão fechada, tentando reconectar...');
+      const reason = lastDisconnect?.error?.output?.statusCode;
+      console.log('Conexão fechada, tentando reconectar...', reason);
       // reconectar após 5 segundos
       setTimeout(() => startBot(), 5000);
     } else if (connection === 'open') {
