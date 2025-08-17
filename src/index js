@@ -5,25 +5,39 @@ const qrcode = require('qrcode-terminal');
 
 const { state, saveState } = useSingleFileAuthState('./auth_info.json');
 
-const sock = makeWASocket({
-  auth: state,
-  printQRInTerminal: true
-});
+async function startBot() {
+  const sock = makeWASocket({
+    auth: state,
+    printQRInTerminal: true, // apenas para testes locais
+  });
 
-sock.ev.on('messages.upsert', async m => {
-  const message = m.messages[0];
-  if (!message.key.fromMe) {
-    await handleMessage(sock, message);
-  }
-});
+  // Captura novas mensagens
+  sock.ev.on('messages.upsert', async m => {
+    const message = m.messages[0];
+    if (message.message && !message.key.fromMe) {
+      try {
+        await handleMessage(sock, message);
+      } catch (err) {
+        console.error('Erro ao processar mensagem:', err);
+      }
+    }
+  });
 
-sock.ev.on('connection.update', update => {
-  const { connection, lastDisconnect } = update;
-  if (connection === 'close') {
-    console.log('Conexão fechada, tentando reconectar...');
-  } else if (connection === 'open') {
-    console.log('Bot conectado!');
-  }
-});
+  // Eventos de conexão
+  sock.ev.on('connection.update', update => {
+    const { connection, lastDisconnect } = update;
+    if (connection === 'close') {
+      console.log('Conexão fechada, tentando reconectar...');
+      // reconectar após 5 segundos
+      setTimeout(() => startBot(), 5000);
+    } else if (connection === 'open') {
+      console.log('Bot conectado!');
+    }
+  });
 
-sock.ev.on('creds.update', saveState);
+  // Salva credenciais automaticamente
+  sock.ev.on('creds.update', saveState);
+}
+
+// Inicia o bot
+startBot();
