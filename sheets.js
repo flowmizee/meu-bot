@@ -1,27 +1,23 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
+const creds = require('./creds.json'); // credenciais do Google Service Account
 
-const creds = JSON.parse(process.env.GOOGLE_CREDS || '{}'); // Pegando credenciais da variável
+const doc = new GoogleSpreadsheet('SUA_PLANILHA_ID_AQUI');
 
-const doc = new GoogleSpreadsheet(process.env.SPREADSHEET_ID);
-
-async function accessSpreadsheet() {
-  if (!creds.client_email || !creds.private_key) {
-    throw new Error('Credenciais do Google não configuradas corretamente.');
-  }
+async function accessSheet() {
   await doc.useServiceAccountAuth(creds);
   await doc.loadInfo();
+  return doc.sheetsByIndex[0]; // seleciona a primeira aba
 }
 
-async function getSheetData(sheetName) {
-  await accessSpreadsheet();
-  const sheet = doc.sheetsByTitle[sheetName];
-  return sheet.getRows();
+async function getSheetData() {
+  const sheet = await accessSheet();
+  const rows = await sheet.getRows();
+  return rows.map(r => r._rawData);
 }
 
-async function updateSheetData(sheetName, data) {
-  await accessSpreadsheet();
-  const sheet = doc.sheetsByTitle[sheetName];
+async function addSheetData(data) {
+  const sheet = await accessSheet();
   await sheet.addRow(data);
 }
 
-module.exports = { getSheetData, updateSheetData };
+module.exports = { getSheetData, addSheetData };
