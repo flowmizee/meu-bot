@@ -1,7 +1,7 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const creds = require('./creds.json'); // credenciais do Google Service Account
 
-const doc = new GoogleSpreadsheet('SUA_PLANILHA_ID_AQUI');
+const doc = new GoogleSpreadsheet('1_KqTCa8u1G49hRs3Vzf-SfU_uGLSYXlK1sAJHMqR_Ic');
 
 async function accessSheet() {
   await doc.useServiceAccountAuth(creds);
