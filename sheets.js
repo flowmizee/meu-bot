@@ -1,7 +1,10 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
-const creds = require('./creds.json'); // credenciais do Google Service Account
 
-const doc = new GoogleSpreadsheet('1_KqTCa8u1G49hRs3Vzf-SfU_uGLSYXlK1sAJHMqR_Ic');
+// Pega o JSON do service account das variáveis de ambiente
+const creds = JSON.parse(process.env.GOOGLE_CREDS);
+
+// Pega o ID da planilha das variáveis de ambiente
+const doc = new GoogleSpreadsheet(process.env.SPREADSHEET_ID);
 
 async function accessSheet() {
   await doc.useServiceAccountAuth(creds);
