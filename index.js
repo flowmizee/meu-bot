@@ -1,5 +1,4 @@
-const makeWASocket = require('@whiskeysockets/baileys').default;
-const { useSingleFileAuthState } = require('@whiskeysockets/baileys'); // só assim funciona
+const { makeWASocket, useSingleFileAuthState } = require('@whiskeysockets/baileys');
 const { handleMessage } = require('./flow');
 
 const { state, saveState } = useSingleFileAuthState('./auth_info.json');
@@ -7,7 +6,7 @@ const { state, saveState } = useSingleFileAuthState('./auth_info.json');
 async function startBot() {
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true // só para testes locais
+    printQRInTerminal: true // para testes locais
   });
 
   sock.ev.on('messages.upsert', async m => {
